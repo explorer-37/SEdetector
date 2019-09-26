@@ -4,7 +4,7 @@
 ///   Mws Cup2019 (input team name)                                           //
 //    Sandbox Evasion Detector                                               ///
 //                                                                          ////
-//    Last Modified: 09/25/2019                                            /////
+//    Last Modified: 09/26/2019                                            /////
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -13,22 +13,27 @@
 int main(int argc, char *argv[]){
 	// initialize
 	char *path, *cmd;
-		if (argc < 2) {
-			fprintf(stderr, "Usage: %s [file]\n", argv[0]);
-			exit(EXIT_FAILURE);
-		}
-		path = argv[1];
-		if (argc == 2)
-			cmd = NULL;
-		else
-			cmd = argv[2];
+	if (argc < 2) {
+		fprintf(stderr, "Usage: %s [file]\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	path = argv[1];
+	if (argc == 2)
+		cmd = NULL;
+	else
+		cmd = argv[2];
+
+	// create named pipe for recieving information
+	{
+		HANDLE hPipe = CreateNamedPipeA("\\\\.\\pipe\\SEdetector", PIPE_ACCESS_INBOUND, ) // writing
+	}
 
 	// create target process and inject DLL into the process
 	{
 		STARTUPINFOA sInfo = {};
 		sInfo.cb = sizeof(sInfo);
 		PROCESS_INFOMATION pInfo = {};
-		char dllPath[] = "apimonitor.dll";
+		char dllPath[] = DLLPATH;
 		void *dllAddress;
 		HMODULE kernel32;
 		FARPROC loadlibrary;
@@ -38,7 +43,7 @@ int main(int argc, char *argv[]){
 			fprintf(stderr, "Cannot create process.\nPath: %s\n", path);
 			exit((int)GetLastError());
 		}
-		if (!(address = VirtualAllocEx(pInfo.hProcess, NULL, sizeof(dllPath), MEM_COMMIT, PAGE_READWRITE))) {
+		if (!(dllAddress = VirtualAllocEx(pInfo.hProcess, NULL, sizeof(dllPath), MEM_COMMIT, PAGE_READWRITE))) {
 			fprintf(stderr, "Cannot allocate memory on target process.\n");
 			exit((int)GetLastError());
 		}
@@ -62,6 +67,13 @@ int main(int argc, char *argv[]){
 
 	// start monitoring WinAPI (using dll injection)
 	// author: NAKAMURA
+	while (1) {
+		char buf[256];
+		if(!ReadFile(hPipe, buf, sizeof(buf), NULL, NULL))
+			break;
+	}
+
+	ResumeThread(pInfo.hThread);
 	
 	// detect sandbox evasion
 	
