@@ -13,6 +13,8 @@
 int main(int argc, char *argv[]){
 	// initialize
 	char *path, *cmd;
+	PROCESS_INFORMATION pInfo = {};
+
 	if (argc < 2) {
 		fprintf(stderr, "Usage: %s [file]\n", argv[0]);
 		exit(EXIT_FAILURE);
@@ -25,14 +27,13 @@ int main(int argc, char *argv[]){
 
 	// create named pipe for recieving information
 	{
-		HANDLE hPipe = CreateNamedPipeA("\\\\.\\pipe\\SEdetector", PIPE_ACCESS_INBOUND, ) // writing
+		//HANDLE hPipe = CreateNamedPipeA("\\\\.\\pipe\\SEdetector", PIPE_ACCESS_INBOUND, ) // writing
 	}
 
 	// create target process and inject DLL into the process
 	{
 		STARTUPINFOA sInfo = {};
 		sInfo.cb = sizeof(sInfo);
-		PROCESS_INFOMATION pInfo = {};
 		char dllPath[] = DLLPATH;
 		void *dllAddress;
 		HMODULE kernel32;
@@ -43,11 +44,14 @@ int main(int argc, char *argv[]){
 			fprintf(stderr, "Cannot create process.\nPath: %s\n", path);
 			exit((int)GetLastError());
 		}
+		CloseHandle(sInfo.hStdInput);
+		CloseHandle(sInfo.hStdOutput);
+		CloseHandle(sInfo.hStdError);
 		if (!(dllAddress = VirtualAllocEx(pInfo.hProcess, NULL, sizeof(dllPath), MEM_COMMIT, PAGE_READWRITE))) {
 			fprintf(stderr, "Cannot allocate memory on target process.\n");
 			exit((int)GetLastError());
 		}
-		if (!WriteProcessMemory(pInfo.hProcess, address, (void *)dllPath, sizeof(dllPath), NULL)) {
+		if (!WriteProcessMemory(pInfo.hProcess, dllAddress, (void *)dllPath, sizeof(dllPath), NULL)) {
 			fprintf(stderr, "Cannot write memory of target process.\n");
 			exit((int)GetLastError());
 		}
@@ -67,11 +71,11 @@ int main(int argc, char *argv[]){
 
 	// start monitoring WinAPI (using dll injection)
 	// author: NAKAMURA
-	while (1) {
-		char buf[256];
-		if(!ReadFile(hPipe, buf, sizeof(buf), NULL, NULL))
-			break;
-	}
+	//while (1) {
+	//	char buf[256];
+	//	if(!ReadFile(hPipe, buf, sizeof(buf), NULL, NULL))
+	//		break;
+	//}
 
 	ResumeThread(pInfo.hThread);
 	
@@ -79,9 +83,6 @@ int main(int argc, char *argv[]){
 	
 	// finalize
 	// Kill target process first.
-	CloseHandle(sInfo.hStdInput);
-	CloseHandle(sInfo.hStdOutput);
-	CloseHandle(sInfo.hStdError);
 	CloseHandle(pInfo.hThread);
 	CloseHandle(pInfo.hProcess);
 }
