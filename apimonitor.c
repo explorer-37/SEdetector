@@ -12,17 +12,15 @@ int WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved){
 			GetApiEntry();
 			// set API hook
 			ModifyIat("kernel32.dll", newIsDebuggerPresent, oriapi[IDX_ISDEBUGGERPRESENT].addr);
-			ModifyIat("kernel32.dll", newGetFileAttributes, oriapi[IDX_GETFILEATTRIBUTES].addr);
-			ModifyIat("Advapi32.dll", newRegOpenKeyEx, oriapi[IDX_REGOPENKEYEX].addr);
+			ModifyIat("kernel32.dll", newGetFileAttributesA, oriapi[IDX_GETFILEATTRIBUTESA].addr);
+			ModifyIat("Advapi32.dll", newRegOpenKeyExA, oriapi[IDX_REGOPENKEYEXA].addr);
 			//CreateNamedPipe("\\\\.\\pipe\\SEdetector",);
-			IsDebuggerPresent(); // for debugging
 			break;
 		case DLL_PROCESS_DETACH:
 			// restore IAT
-			IsDebuggerPresent(); // for debugging
 			ModifyIat("kernel32.dll", oriapi[IDX_ISDEBUGGERPRESENT].addr, newIsDebuggerPresent);
-			ModifyIat("kernel32.dll", oriapi[IDX_GETFILEATTRIBUTES].addr, newGetFileAttributes);
-			ModifyIat("Advapi32.dll", oriapi[IDX_REGOPENKEYEX].addr, newRegOpenKeyEx);
+			ModifyIat("kernel32.dll", oriapi[IDX_GETFILEATTRIBUTESA].addr, newGetFileAttributesA);
+			ModifyIat("Advapi32.dll", oriapi[IDX_REGOPENKEYEXA].addr, newRegOpenKeyExA);
 			break;
 		default:
 			;
@@ -36,32 +34,32 @@ void GetApiEntry(){
 	HMODULE advapi32;
 	if((kernel32 = GetModuleHandle("kernel32"))) {
 		{
-			char *name = "IsDebbugerPresent";
+			const char *name = "IsDebbugerPresent";
 			oriapi[IDX_ISDEBUGGERPRESENT].addr = GetProcAddress(kernel32, "IsDebuggerPresent");
 			oriapi[IDX_ISDEBUGGERPRESENT].Name = name;
 			oriapi[IDX_ISDEBUGGERPRESENT].NumArg = 0;
 		}
 		{
-			char *name = "GetFileAttributes";
-			oriapi[IDX_GETFILEATTRIBUTES].addr = GetProcAddress(kernel32, "GetFileAttributes");
-			oriapi[IDX_GETFILEATTRIBUTES].Name = name;
-			oriapi[IDX_GETFILEATTRIBUTES].NumArg = 1;
-			oriapi[IDX_GETFILEATTRIBUTES].Arg = (int *)malloc(sizeof(int));
-			oriapi[IDX_GETFILEATTRIBUTES].Arg[0] = TYPE_STRING;
+			const char *name = "GetFileAttributesA";
+			oriapi[IDX_GETFILEATTRIBUTESA].addr = GetProcAddress(kernel32, "GetFileAttributesA");
+			oriapi[IDX_GETFILEATTRIBUTESA].Name = name;
+			oriapi[IDX_GETFILEATTRIBUTESA].NumArg = 1;
+			oriapi[IDX_GETFILEATTRIBUTESA].Arg = (int *)malloc(sizeof(int));
+			oriapi[IDX_GETFILEATTRIBUTESA].Arg[0] = TYPE_STRING;
 		}
 	}
 	if((advapi32 = GetModuleHandle("Advapi32"))) {
 		{
-			char *name = "RegOpenKeyEx";
-			oriapi[IDX_REGOPENKEYEX].addr = GetProcAddress(advapi32, "RegOpenKeyEx");
-			oriapi[IDX_REGOPENKEYEX].Name = name;
-			oriapi[IDX_REGOPENKEYEX].NumArg = 5;
-			oriapi[IDX_REGOPENKEYEX].Arg = (int *)malloc(sizeof(int) * 5);
-			oriapi[IDX_REGOPENKEYEX].Arg[0] = TYPE_ADDR;
-			oriapi[IDX_REGOPENKEYEX].Arg[1] = TYPE_STRING;
-			oriapi[IDX_REGOPENKEYEX].Arg[2] = TYPE_INT;
-			oriapi[IDX_REGOPENKEYEX].Arg[3] = TYPE_ATTRIBUTE16;
-			oriapi[IDX_REGOPENKEYEX].Arg[4] = TYPE_ADDR;
+			const char *name = "RegOpenKeyExA";
+			oriapi[IDX_REGOPENKEYEXA].addr = GetProcAddress(advapi32, "RegOpenKeyExA");
+			oriapi[IDX_REGOPENKEYEXA].Name = name;
+			oriapi[IDX_REGOPENKEYEXA].NumArg = 5;
+			oriapi[IDX_REGOPENKEYEXA].Arg = (int *)malloc(sizeof(int) * 5);
+			oriapi[IDX_REGOPENKEYEXA].Arg[0] = TYPE_ADDR;
+			oriapi[IDX_REGOPENKEYEXA].Arg[1] = TYPE_STRING;
+			oriapi[IDX_REGOPENKEYEXA].Arg[2] = TYPE_INT;
+			oriapi[IDX_REGOPENKEYEXA].Arg[3] = TYPE_ATTRIBUTE16;
+			oriapi[IDX_REGOPENKEYEXA].Arg[4] = TYPE_ADDR;
 		}
 	}
 
@@ -179,11 +177,12 @@ BOOL WINAPI newIsDebuggerPresent(){
 	return oriapi[IDX_ISDEBUGGERPRESENT].addr();
 }
 
-DWORD WINAPI newGetFileAttributes(LPCTSTR lpFileName){
-	GetCallApi(IDX_GETFILEATTRIBUTES, lpFileName);
-	return oriapi[IDX_GETFILEATTRIBUTES].addr();
+DWORD WINAPI newGetFileAttributesA(LPCTSTR lpFileName){
+	GetCallApi(IDX_GETFILEATTRIBUTESA, lpFileName);
+	return oriapi[IDX_GETFILEATTRIBUTESA].addr();
 }
-LONG newRegOpenKeyEx(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult){
-	GetCallApi(IDX_REGOPENKEYEX, hKey, lpSubKey, ulOptions, samDesired, phkResult);
-	return oriapi[IDX_REGOPENKEYEX].addr();
+
+LONG WINAPI newRegOpenKeyExA(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult){
+	GetCallApi(IDX_REGOPENKEYEXA, hKey, lpSubKey, ulOptions, samDesired, phkResult);
+	return oriapi[IDX_REGOPENKEYEXA].addr();
 }

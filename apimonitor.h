@@ -7,8 +7,8 @@
 #define MAX_STR 65536
 
 #define IDX_ISDEBUGGERPRESENT 0
-#define IDX_GETFILEATTRIBUTES 1
-#define IDX_REGOPENKEYEX 2
+#define IDX_GETFILEATTRIBUTESA 1
+#define IDX_REGOPENKEYEXA 2
 
 #define TYPE_INT 0
 #define TYPE_ADDR 1
@@ -19,7 +19,7 @@
 
 typedef struct _APIINFO {
 	FARPROC addr;
-	char *Name;
+	const char *Name;
 	int NumArg;
 	int *Arg;
 } APIINFO;
@@ -35,7 +35,7 @@ void GetCallApi(int ApiIndex, ...);
 
 // proclaim of hook api
 BOOL newIsDebuggerPresent();
-DWORD newGetFileAttributes(LPCTSTR lpFileName);
-LONG newRegOpenKeyEx(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
+DWORD newGetFileAttributesA(LPCTSTR lpFileName);
+LONG newRegOpenKeyExA(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
 
 APIINFO oriapi[MAX_ORIAPI];
