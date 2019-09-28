@@ -1,20 +1,6 @@
-#include <windows.h>
-#include <tlhelp32.h>
-#include <dbghelp.h>
-//#pragma comment(lib, "Dbghelp") // not working at gcc compile
-
-void ModifyIat(char *dllname, void *newaddr, void *oldaddr);
-void ModifyIatOne(char *dllname, void *newaddr, void *oldaddr, HMODULE hModule);
-
-void GetCallApi(char *apiname, ...);
-
-BOOL newIsDebuggerPresent();
-FARPROC oriIsDebuggerPresent;
-INT newShellAboutW();
-FARPROC oriShellAboutW;
+#include "apimonitor.h"
 
 int WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved){
-	// set API hook
 	// get WinAPIs
 	HMODULE kernel32;
 	HMODULE shell32;
@@ -22,18 +8,21 @@ int WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved){
 		oriIsDebuggerPresent = GetProcAddress(kernel32, "IsDebuggerPresent");
 	}
 	if((shell32 = GetModuleHandle("shell32"))) {
-		oriIsDebuggerPresent = GetProcAddress(shell32, "IsDebuggerPresent");
+		oriShellAboutW = GetProcAddress(shell32, "ShellAboutW");
 	}
 
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH:
-			ModifyIat("kernel32.dll", oriIsDebuggerPresent, newIsDebuggerPresent);
-			ModifyIat("shell32.dll", oriShellAboutW, newShellAboutW);
-			//CreateNamedPipe("\\\\.\\pipe\\SEdetector",);
-			break;
-		case DLL_PROCESS_DETACH:
+			// set API hook
 			ModifyIat("kernel32.dll", newIsDebuggerPresent, oriIsDebuggerPresent);
 			ModifyIat("shell32.dll", newShellAboutW, oriShellAboutW);
+			//CreateNamedPipe("\\\\.\\pipe\\SEdetector",);
+			IsDebuggerPresent(); // for debugging
+			break;
+		case DLL_PROCESS_DETACH:
+			// restore IAT
+			ModifyIat("kernel32.dll", oriIsDebuggerPresent, newIsDebuggerPresent);
+			ModifyIat("shell32.dll", oriShellAboutW, newShellAboutW);
 			break;
 		default:
 			;
@@ -56,26 +45,41 @@ void ModifyIat(char *dllname, void *newaddr, void *oldaddr){
 	CloseHandle(hModuleSnap);
 }
 
+// Get entry of image import descriptor from memory image
+PIMAGE_IMPORT_DESCRIPTOR GetImportEntry(PVOID Base, PULONG Size){
+	PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)Base;
+	PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(Base + pDosHeader->e_lfanew);
+	PIMAGE_OPTIONAL_HEADER pOptionalHeader = (PIMAGE_OPTIONAL_HEADER)((BYTE *)pNtHeaders + sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER));
+	PIMAGE_DATA_DIRECTORY pDataDirectory = (PIMAGE_DATA_DIRECTORY)(pOptionalHeader->DataDirectory);
+	PIMAGE_IMPORT_DESCRIPTOR pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(Base + pDataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+	Size = (PULONG)(Base + pDataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size);
+	return pImportDescriptor;
+}
+
 void ModifyIatOne(char *dllname, void *newaddr, void *oldaddr, HMODULE hModule){
 	ULONG size;
-	PIMAGE_IMPORT_DESCRIPTOR pImgDesc = ImageDirectoryEntryToData(hModule, TRUE, IMAGE_DIRECTORY_ENTRY_IMPORT, &size);
-	if (!pImgDesc)
+	//PIMAGE_IMPORT_DESCRIPTOR pImpDesc = ImageDirectoryEntryToData(hModule, TRUE, IMAGE_DIRECTORY_ENTRY_IMPORT, &size);
+	PIMAGE_IMPORT_DESCRIPTOR pImpDesc = GetImportEntry(hModule, &size);
+	if (!pImpDesc)
 		return;
 
-	while (pImgDesc->Name) {
-		char *name = (char *)hModule + pImgDesc->Name;
+	while (pImpDesc->Name) {
+		char *name = (char *)hModule + pImpDesc->Name;
 		if (lstrcmpi(name, dllname) == 0) {
 			break;
 		}
-		pImgDesc++;
+		pImpDesc++;
 	}
-	if (!(pImgDesc->Name))
+	if (!(pImpDesc->Name))
 		return ;
 
-	PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)((char *)hModule + pImgDesc->FirstThunk);
+	PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)((char *)hModule + pImpDesc->FirstThunk);
 	while (pThunk->u1.Function) {
 		PROC *paddr = (PROC *)&pThunk->u1.Function;
 		if (*paddr == oldaddr) {
+			char str[256];
+			sprintf(str, "addr = 0x%I64x", (unsigned long long int)*paddr); // for debugging
+			MessageBox(NULL, str, "debug", MB_SYSTEMMODAL); // for debugging
 			DWORD flOldProtect;
 			VirtualProtect(paddr, sizeof(paddr), PAGE_EXECUTE_READWRITE, &flOldProtect);
 			*paddr = newaddr;
@@ -87,6 +91,9 @@ void ModifyIatOne(char *dllname, void *newaddr, void *oldaddr, HMODULE hModule){
 
 void GetCallApi(char *apiname, ...){
 	// send API information using named pipe
+	char str[512] = {};
+	sprintf(str, "%256s called.", apiname); // for debugging
+	MessageBox(NULL, str, "debug", MB_SYSTEMMODAL); // for debugging
 	return;
 }
 
@@ -96,6 +103,6 @@ BOOL WINAPI newIsDebuggerPresent(){
 }
 
 INT WINAPI newShellAboutW(HWND hWnd, LPCWSTR szApp, LPCWSTR szOtherStuff, HICON hIcon){
-	//GetCallApi("ShellAboutW", hWnd, szApp, szOtherStuff, hIcon);
-	return oriShellAboutW(hWnd, L"ShellAboutW hooked!", szOtherStuff, hIcon);
+	GetCallApi("ShellAboutW", hWnd, szApp, szOtherStuff, hIcon);
+	return oriShellAboutW(hWnd, L"ShellAboutW hooked!", szOtherStuff, hIcon); // for debugging
 }
