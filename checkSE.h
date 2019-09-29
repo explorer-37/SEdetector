@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <string.h>
+
 #define SE_NONE 0
 #define SE_EXAMPLE 1
 
