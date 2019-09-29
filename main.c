@@ -1,12 +1,11 @@
-////////////////////////////////////////////////////////////////////////////////
-///// main.c                                                                  //
-////                                                                          //
-///   Mws Cup2019 (input team name)                                           //
-//    Sandbox Evasion Detector                                               ///
-//                                                                          ////
-//    Last Modified: 09/26/2019                                            /////
-////////////////////////////////////////////////////////////////////////////////
-
+/*!
+ * main.c
+ * SEdetector - Sandbox Evasion detector
+ *
+ * Copyright (c) 2019, NAKAMURA Ryosuke
+ * Released under the BSD 2 clause license.
+ * see LICENSE.txt
+ */
 
 #include "SEdetector.h"
 

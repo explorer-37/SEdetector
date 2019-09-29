@@ -1,3 +1,12 @@
+/*!
+ * apimonitor.c
+ * SEdetector Sandbox Evasion detector
+ *
+ * Copyright (c) 2019, NAKAMURA Ryosuke
+ * Released under the BSD 2 clause license.
+ * see LICENSE.txt
+ */
+
 #include "apimonitor.h"
 
 int WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved){
