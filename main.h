@@ -1,5 +1,5 @@
 /*!
- * SEdetector.h
+ * main.h
  * SEdetector - Sandbox Evasion detector
  *
  * Copyright (c) 2019, NAKAMURA Ryosuke
