@@ -14,3 +14,5 @@
 #include "CheckSE.h"
 
 #define DLLPATH "apimonitor.dll"
+#define PIPE_BUFFER 65536
+#define MAX_BUF PIPE_BUFFER

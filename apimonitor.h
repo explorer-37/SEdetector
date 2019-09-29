@@ -11,7 +11,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 
-#define MAX_ORIAPI 256
+#define MAX_HOOKED_API 256
 
 #define MAX_STR 65536
 
@@ -27,7 +27,9 @@
 #define TYPE_STRING 5
 
 typedef struct _APIINFO {
-	FARPROC addr;
+	FARPROC oriaddr;
+	void *newaddr;
+	const char *Dll;
 	const char *Name;
 	int NumArg;
 	int *Arg;
@@ -35,16 +37,19 @@ typedef struct _APIINFO {
 
 void GetApiEntry();
 
-void ModifyIat(char *dllname, void *newaddr, void *oldaddr);
+void ModifyIat(const char *dllname, void *newaddr, void *oldaddr);
 PIMAGE_IMPORT_DESCRIPTOR GetImportEntry(PVOID Base, PULONG Size);
-void ModifyIatOne(char *dllname, void *newaddr, void *oldaddr, HMODULE hModule);
+void ModifyIatOne(const char *dllname, void *newaddr, void *oldaddr, HMODULE hModule);
 
 void GetCallApi(int ApiIndex, ...);
 
 
 // proclaim of hook api
-BOOL newIsDebuggerPresent();
-DWORD newGetFileAttributesA(LPCTSTR lpFileName);
-LONG newRegOpenKeyExA(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
+BOOL WINAPI newIsDebuggerPresent();
+DWORD WINAPI newGetFileAttributesA(LPCTSTR lpFileName);
+LONG WINAPI newRegOpenKeyExA(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
 
-APIINFO oriapi[MAX_ORIAPI];
+APIINFO ApiInfo[MAX_HOOKED_API] = {};
+
+HANDLE hPipe;
+OVERLAPPED Overlapped = {};
