@@ -12,7 +12,7 @@ $(PROGRAM):	$(OBJS)
 		$(CC) $(CFLAG) $(LIBS) -o $(PROGRAM) $(OBJS)
 
 dll:	$(DLLNAME).c
-	$(CC) $(DLLFLAGS) $(LIBS) -o $(DLLNAME).dll $(DLLNAME)
+	$(CC) $(CLAG) $(DLLFLAGS) $(LIBS) -o $(DLLNAME).dll $(DLLNAME).c
 
 clean:
 	rm -f *.o *~ *.dll *.exe
