@@ -166,32 +166,32 @@ void GetCallApi(int ApiIndex, ...){
 				case TYPE_INT:
 					arg_int = va_arg(arglist, int);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s, %d", tmp, arg_int);
+					snprintf(str, MAX_STR, "%s,%d", tmp, arg_int);
 					break;
 				case TYPE_ADDR:
 					arg_uint64 = va_arg(arglist, u_int64);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s, 0x%I64x", tmp, arg_uint64);
+					snprintf(str, MAX_STR, "%s,0x%I64x", tmp, arg_uint64);
 					break;
 				case TYPE_ATTRIBUTE16:
 					arg_uint16 = va_arg(arglist, unsigned int);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s, 0x%x", tmp, arg_uint16);
+					snprintf(str, MAX_STR, "%s,0x%x", tmp, arg_uint16);
 					break;
 				case TYPE_ATTRIBUTE32:
 					arg_uint32 = va_arg(arglist, unsigned int);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s, 0x%x", tmp, arg_uint32);
+					snprintf(str, MAX_STR, "%s,0x%x", tmp, arg_uint32);
 					break;
 				case TYPE_ATTRIBUTE64:
 					arg_uint64 = va_arg(arglist, u_int64);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s, 0x%I64x", tmp, arg_uint64);
+					snprintf(str, MAX_STR, "%s,0x%I64x", tmp, arg_uint64);
 					break;
 				case TYPE_STRING:
 					arg_str = va_arg(arglist, char*);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s, %s", tmp, arg_str);
+					snprintf(str, MAX_STR, "%s,%s", tmp, arg_str);
 					break;
 				default:
 					;
