@@ -14,9 +14,18 @@
 #define SE_NONE 0
 #define SE_EXAMPLE 1
 
+#define MAX_APINAME 256
+
 typedef struct ApiInfo {
-	char name[256];
-	void **arg;
+	char name[MAX_APINAME];
+	union u {
+		int arg_int;
+		unsigned long long arg_addr;
+		unsigned short arg_attr16;
+		unsigned int arg_attr32;
+		unsigned long long arg_attr64;
+		char *str;
+	} *u;
 	//uint64_t time;
 } APIINFO;
 
