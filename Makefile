@@ -1,12 +1,18 @@
-PROGRAM = SEdetector
-CC	= gcc
-CFLAGS	= -Wall
-LIBS	= 
-OBJS	= main.o
+PROGRAM		= SEdetector
+CC			= i686-w64-mingw32-gcc
+CFLAGS		= -Wall
+LIBS		= 
+OBJS		= main.o checkSE.o
+DLLNAME		= apimonitor
+DLLFLAGS	= -shared -fPIC
 
 all:	$(PROGRAM)
 
 $(PROGRAM):	$(OBJS)
-		$(CC) $(OBJS) $(CFLAG) $(LIBS) -o $(PROGRAM)
+		$(CC) $(CFLAG) $(LIBS) -o $(PROGRAM) $(OBJS)
 
-clean:;		rm -f *.o *~ *.dll *.exe
+dll:	$(DLLNAME).c
+	$(CC) $(DLLFLAGS) $(LIBS) -o $(DLLNAME).dll $(DLLNAME)
+
+clean:
+	rm -f *.o *~ *.dll *.exe
