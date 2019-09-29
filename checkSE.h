@@ -25,7 +25,7 @@ typedef struct ApiInfo {
 		unsigned int arg_attr32;
 		unsigned long long arg_attr64;
 		unsigned long long arg_addr;
-		char *art_str;
+		char *arg_str;
 	} *u;
 	//uint64_t time;
 } APIINFO;

@@ -141,36 +141,37 @@ int GetTypeArgument(int index, int arg){
 void ConvertArgument(char *str, APIINFO *ApiInfo, int arg, int type) {
 	switch (type) {
 		case TYPE_INT:
-			ApiInfo->u[arg] = (int)malloc(sizeof(int));
+			ApiInfo->u[arg].arg_int = (int)malloc(sizeof(int));
 			ApiInfo->u[arg].arg_int = atoi(str);
 			break;
 		case TYPE_ATTR16:
-			ApiInfo->u[arg] = (unsigned short int)malloc(sizeof(unsigned short int));
+			ApiInfo->u[arg].arg_attr16 = (unsigned short int)malloc(sizeof(unsigned short int));
 			ApiInfo->u[arg].arg_attr16 = strtol(str, NULL, 0);
 			// writing
 			break;
 		case TYPE_ATTR32:
-			ApiInfo->u[arg] = (unsigned int)malloc(sizeof(unsigned int));
+			ApiInfo->u[arg].arg_attr32 = (unsigned int)malloc(sizeof(unsigned int));
 			ApiInfo->u[arg].arg_attr32 = strtol(str, NULL, 0);
 			// writing
 			break;
 		case TYPE_ATTR64:
-			ApiInfo->u[arg] = (unsigned long long)malloc(sizeof(unsigned long long));
+			ApiInfo->u[arg].arg_attr64 = (unsigned long long)malloc(sizeof(unsigned long long));
 			ApiInfo->u[arg].arg_attr64 = strtol(str, NULL, 0);
 			// writing
 			break;
 		case TYPE_ADDR:
-			ApiInfo->u[arg] = (unsigned long long)malloc(sizeof(unsigned long long));
+			ApiInfo->u[arg].arg_addr = (unsigned long long)malloc(sizeof(unsigned long long));
 			ApiInfo->u[arg].arg_addr = strtol(str, NULL, 0);
 			// writing
 			break;
 		case TYPE_STR:
-			ApiInfo->u[arg] = (char *)malloc(sizeof(char *));
+			ApiInfo->u[arg].arg_str = (char *)malloc(sizeof(char *));
 			ApiInfo->u[arg].arg_str = str;
 			break;
+	}
 }
 
-void StrToApiInfo(str, APIINFO *ApiInfo){
+void StrToApiInfo(char *str, APIINFO *ApiInfo){
 	int i;
 	int apiindex, type;
 	char *buf[MAX_ARG + 1];
@@ -178,11 +179,11 @@ void StrToApiInfo(str, APIINFO *ApiInfo){
 		buf[i] = (char *)malloc(sizeof(char) * MAX_BUF);
 	}
 	ApiInfo->Num_arg = strnsep(str, buf, ',', MAX_ARG + 1) - 1;
-	ApiInfo->Name = buf[0];
+	strncpy(ApiInfo->Name,buf[0],MAX_ARG+1);
 	apiindex = NameToApiIndex(ApiInfo->Name);
 	for (i = 0; i < ApiInfo->Num_arg; i++) {
 		type = GetTypeArgument(apiindex, i);
-		ConvertArgument(buf[i+1], ApiInfo, type);
+		ConvertArgument(buf[i+1], ApiInfo, apiindex, type);
 		if (type != TYPE_STR)
 			free(buf[i+1]);
 	}

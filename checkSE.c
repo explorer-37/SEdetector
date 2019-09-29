@@ -20,7 +20,7 @@ int CheckSE(APIINFO *info){
 
 // an example function which detect one of SE methods
 int SEExample(APIINFO *info){
-	if (strcmp(info->name, "Example") == 0) {
+	if (strcmp(info->Name, "Example") == 0) {
 		return 1;
 	}
 	return 0;
