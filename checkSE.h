@@ -17,14 +17,15 @@
 #define MAX_APINAME 256
 
 typedef struct ApiInfo {
-	char name[MAX_APINAME];
+	char Name[MAX_APINAME];
+	int Num_arg;
 	union u {
 		int arg_int;
-		unsigned long long arg_addr;
 		unsigned short arg_attr16;
 		unsigned int arg_attr32;
 		unsigned long long arg_attr64;
-		char *str;
+		unsigned long long arg_addr;
+		char *art_str;
 	} *u;
 	//uint64_t time;
 } APIINFO;
