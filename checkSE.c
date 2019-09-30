@@ -18,6 +18,7 @@ int CheckSE(APIINFO *info, int num_info){
 	return SE_NONE;
 }
 
+// check if the program peeks registry key that is unique in vmware
 int CheckVmwareRegKey(APIINFO *info, int num_info){
 	int i;
 	for (i = 0; i < num_info; i++) {
