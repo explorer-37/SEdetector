@@ -98,7 +98,7 @@ void GetApiEntry(){
 			ApiInfo[IDX_REGOPENKEYEXA].Arg = (int *)malloc(sizeof(int) * 5);
 			ApiInfo[IDX_REGOPENKEYEXA].Arg[0] = TYPE_ADDR;
 			ApiInfo[IDX_REGOPENKEYEXA].Arg[1] = TYPE_STRING;
-			ApiInfo[IDX_REGOPENKEYEXA].Arg[2] = TYPE_INT;
+			ApiInfo[IDX_REGOPENKEYEXA].Arg[2] = TYPE_ATTRIBUTE32;
 			ApiInfo[IDX_REGOPENKEYEXA].Arg[3] = TYPE_ATTRIBUTE32;
 			ApiInfo[IDX_REGOPENKEYEXA].Arg[4] = TYPE_ADDR;
 		}

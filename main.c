@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
 		SleepEx(1, FALSE);
 	}
 
-	printf("started listening\n"); // for debugging
+	//printf("started listening\n"); // for debugging
 	while (1) {
 		char str[MAX_STR];
 		ReadFile(hPipe, str, sizeof(str), NULL, &Overlapped);
@@ -95,9 +95,9 @@ int main(int argc, char *argv[]){
 		}
 		if (WaitForSingleObject(pInfo.hThread, 0) == WAIT_OBJECT_0)
 			break;
-		printf("%s\n", str); // for debugging
+		//printf("%s\n", str); // for debugging
 		if(StrToApiInfo(str, &ApiInfo[num_hooked_api])) {
-			printApiInfo(&ApiInfo[num_hooked_api]); // for debugging
+			//printApiInfo(&ApiInfo[num_hooked_api]); // for debugging
 			num_hooked_api++;
 		}
 	}
@@ -208,22 +208,22 @@ void ConvertArgument(char *str, APIINFO *ApiInfo, int arg, int type) {
 			break;
 		case TYPE_ATTR16:
 			arg_attr16 = (unsigned short *)malloc(sizeof(unsigned short *));
-			*arg_attr16 = strtol(str, NULL, 0);
+			*arg_attr16 = strtoul(str, NULL, 0);
 			ApiInfo->Arg[arg] = arg_attr16;
 			break;
 		case TYPE_ATTR32:
 			arg_attr32 = (unsigned int *)malloc(sizeof(unsigned int *));
-			*arg_attr32 = strtol(str, NULL, 0);
+			*arg_attr32 = strtoul(str, NULL, 0);
 			ApiInfo->Arg[arg] = arg_attr32;
 			break;
 		case TYPE_ATTR64:
 			arg_attr64 = (unsigned long long *)malloc(sizeof(unsigned long long *));
-			*arg_attr64 = strtoll(str, NULL, 0);
+			*arg_attr64 = strtoull(str, NULL, 0);
 			ApiInfo->Arg[arg] = arg_attr64;
 			break;
 		case TYPE_ADDR:
 			arg_addr = (unsigned long long *)malloc(sizeof(unsigned long long *));
-			*arg_addr = strtoll(str, NULL, 0);
+			*arg_addr = strtoull(str, NULL, 0);
 			ApiInfo->Arg[arg] = arg_addr;
 			break;
 		case TYPE_STR:
@@ -248,7 +248,6 @@ int StrToApiInfo(char *str, APIINFO *ApiInfo){
 	}
 	ApiInfo->Name = buf[0];
 	ApiInfo->Index = NameToApiIndex(ApiInfo->Name);
-	printf("%d\n", ApiInfo->Index); // for debugging
 	if (ApiInfo->Index == IDX_INVALID_API)
 		return 0;
 	for (i = 0; i < GetNumArgument(ApiInfo->Index); i++) {

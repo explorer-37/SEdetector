@@ -20,7 +20,7 @@
 #define MAX_STR PIPE_BUFFER
 #define MAX_BUF 256
 
-#define MAX_HOOKED_API 65536
+#define MAX_HOOKED_API 1024
 
 // table of num of API arguments
 int numArgApi[] = {
