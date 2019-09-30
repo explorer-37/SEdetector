@@ -62,10 +62,10 @@ int IsCheckVmwareRegKey(APIINFO *info, int num_info){
 }
 
 // return if the program looks for files that is unique to vmware
-int IsCheckVboxFile(APIINFO *info, int num_info){
+int IsCheckVmwareFile(APIINFO *info, int num_info){
 	int i;
 	for (i = 0; i < num_info; i++) {
-		if (info[i]->Index == IDX_GETFILEATTRIBUTES) {
+		if (info[i]->Index == IDX_GETFILEATTRIBUTESA) {
 			char *FileName = (char *)info[i]->Arg[0];
 			if (
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\vmmouse.sys") == 0 ||
@@ -155,12 +155,12 @@ int IsCheckVboxFile(APIINFO *info, int num_info){
 /* end virtual box check */
 
 // an example function which detect one of SE methods
-int SEExample(APIINFO *info, int num_info){
-	int i;
-	for (i = 0; i < num_info; i++) {
-		if (info[i]->Index == IDX_INVALID_API) {
-			return 1;
-		}
-	}
-	return 0;
-}
+//int SEExample(APIINFO *info, int num_info){
+//	int i;
+//	for (i = 0; i < num_info; i++) {
+//		if (info[i]->Index == IDX_INVALID_API) {
+//			return 1;
+//		}
+//	}
+//	return 0;
+//}
