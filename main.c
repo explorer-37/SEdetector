@@ -9,9 +9,6 @@
 
 #include "main.h"
 
-#define GetTypeArgument(_index, _arg) typeArgApi[_index][_arg]
-#define GetNumArgument(_index) numArgApi[_index]
-
 int main(int argc, char *argv[]){
 	// initialize
 	char *path, *cmd;
@@ -19,7 +16,7 @@ int main(int argc, char *argv[]){
 	HANDLE hPipe;
 	OVERLAPPED Overlapped = {};
 	Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	APIINFO ApiInfo;
+	APIINFO ApiInfo[MAX_HOOKED_API];
 	int num_hooked_api = 0;
 
 	if (argc < 2) {
@@ -99,14 +96,16 @@ int main(int argc, char *argv[]){
 		if (WaitForSingleObject(pInfo.hThread, 0) == WAIT_OBJECT_0)
 			break;
 		printf("%s\n", str); // for debugging
-		if(StrToApiInfo(str, &ApiInfo))
-			//CheckSE(&ApiInfo, num_hooked_api); // detect sandbox evasion
-			printApiInfo(&ApiInfo); // for debugging
+		if(StrToApiInfo(str, &ApiInfo[num_hooked_api])) {
+			printApiInfo(&ApiInfo[num_hooked_api]); // for debugging
+			num_hooked_api++;
+		}
 	}
 	CloseHandle(Overlapped.hEvent);
 	CloseHandle(hPipe);
 
 	// finalize
+	CheckSE(ApiInfo, num_hooked_api); // detect sandbox evasion
 	//FreeApiInfo(&ApiInfo);
 	CloseHandle(pInfo.hThread);
 	CloseHandle(pInfo.hProcess);
@@ -177,7 +176,7 @@ int NameToApiIndex(char *Name){
 	if (strncmp(Name, "GetFileAttributesA\0", MAX_BUF) == 0)
 		return IDX_GETFILEATTRIBUTESA;
 	if (strncmp(Name, "RegOpenKeyExA\0", MAX_BUF) == 0)
-		return IDX_OPENREGKEYEXA;
+		return IDX_REGOPENKEYEXA;
 	// writing
 	return IDX_INVALID_API;
 }
