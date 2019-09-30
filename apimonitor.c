@@ -27,7 +27,7 @@ int WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved){
 			}
 			//ModifyIat("kernel32.dll", newIsDebuggerPresent, ApiInfo[IDX_ISDEBUGGERPRESENT].addr);
 			// connect to named pipe
-			hPipe = CreateFileA("\\\\.\\pipe\\SEdetector", GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+			hPipe = ApiInfo[IDX_CREATEFILEA].oriaddr("\\\\.\\pipe\\SEdetector", GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 			Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 			break;
 		case DLL_PROCESS_DETACH:
@@ -68,6 +68,22 @@ void GetApiEntry(){
 			ApiInfo[IDX_GETFILEATTRIBUTESA].NumArg = 1;
 			ApiInfo[IDX_GETFILEATTRIBUTESA].Arg = (int *)malloc(sizeof(int));
 			ApiInfo[IDX_GETFILEATTRIBUTESA].Arg[0] = TYPE_STRING;
+		}
+		{
+			const char *name = "CreateFileA";
+			ApiInfo[IDX_CREATEFILEA].oriaddr = GetProcAddress(kernel32, "CreateFileA");
+			ApiInfo[IDX_CREATEFILEA].newaddr = (void *)newCreateFileA;
+			ApiInfo[IDX_CREATEFILEA].Name = name;
+			ApiInfo[IDX_CREATEFILEA].Dll = dll;
+			ApiInfo[IDX_CREATEFILEA].NumArg = 7;
+			ApiInfo[IDX_CREATEFILEA].Arg = (int *)malloc(sizeof(int) * 7);
+			ApiInfo[IDX_CREATEFILEA].Arg[0] = TYPE_STRING;
+			ApiInfo[IDX_CREATEFILEA].Arg[1] = TYPE_ATTR32;
+			ApiInfo[IDX_CREATEFILEA].Arg[2] = TYPE_ATTR32;
+			ApiInfo[IDX_CREATEFILEA].Arg[3] = TYPE_ADDR;
+			ApiInfo[IDX_CREATEFILEA].Arg[4] = TYPE_ATTR32;
+			ApiInfo[IDX_CREATEFILEA].Arg[5] = TYPE_ATTR32;
+			ApiInfo[IDX_CREATEFILEA].Arg[6] = TYPE_ADDR;
 		}
 	}
 	if((advapi32 = GetModuleHandle("Advapi32"))) {
