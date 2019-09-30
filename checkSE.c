@@ -9,9 +9,9 @@
 
 #include "checkSE.h"
 
-int CheckSE(APIINFO *info){
+int CheckSE(APIINFO *info, int num_info){
 
-	if (SEExample(info)) {
+	if (SEExample(info, num_info)) {
 		return SE_EXAMPLE;
 	}
 
@@ -19,9 +19,12 @@ int CheckSE(APIINFO *info){
 }
 
 // an example function which detect one of SE methods
-int SEExample(APIINFO *info){
-	if (strcmp(info->name, "Example") == 0) {
-		return 1;
+int SEExample(APIINFO *info, int num_info){
+	int i;
+	for (i = 0; i < num_info; i++) {
+		if (info[i].Index == IDX_INVALID_API) {
+			return 1;
+		}
 	}
 	return 0;
 }

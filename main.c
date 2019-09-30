@@ -9,6 +9,9 @@
 
 #include "main.h"
 
+#define GetTypeArgument(_index, _arg) typeArgApi[_index][_arg]
+#define GetNumArgument(_index) numArgApi[_index]
+
 int main(int argc, char *argv[]){
 	// initialize
 	char *path, *cmd;
@@ -16,6 +19,8 @@ int main(int argc, char *argv[]){
 	HANDLE hPipe;
 	OVERLAPPED Overlapped = {};
 	Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	APIINFO ApiInfo;
+	int num_hooked_api = 0;
 
 	if (argc < 2) {
 		fprintf(stderr, "Usage: %s [file]\n", argv[0]);
@@ -85,7 +90,6 @@ int main(int argc, char *argv[]){
 	printf("started listening\n"); // for debugging
 	while (1) {
 		char str[MAX_STR];
-		APIINFO ApiInfo = {};
 		ReadFile(hPipe, str, sizeof(str), NULL, &Overlapped);
 		while (!HasOverlappedIoCompleted(&Overlapped)) {
 			if (WaitForSingleObject(pInfo.hThread, 0) == WAIT_OBJECT_0)
@@ -95,99 +99,170 @@ int main(int argc, char *argv[]){
 		if (WaitForSingleObject(pInfo.hThread, 0) == WAIT_OBJECT_0)
 			break;
 		printf("%s\n", str); // for debugging
-		StrToApiInfo(str, &ApiInfo);
-		CheckSE(&ApiInfo);
-		ClearApiInfo(&ApiInfo);
+		if(StrToApiInfo(str, &ApiInfo))
+			//CheckSE(&ApiInfo, num_hooked_api); // detect sandbox evasion
+			printApiInfo(&ApiInfo); // for debugging
 	}
 	CloseHandle(Overlapped.hEvent);
 	CloseHandle(hPipe);
 
-	// detect sandbox evasion
-	
 	// finalize
+	//FreeApiInfo(&ApiInfo);
 	CloseHandle(pInfo.hThread);
 	CloseHandle(pInfo.hProcess);
 }
 
-int strnsep(char *str, char **buf, const char sep, int num_sep){
+void printApiInfo(APIINFO *ApiInfo){
 	int i;
-	for (i = 0; i < num_sep; i++) {
-		if (*str == '\0') {
-			*buf[i] = '\0';
-			break;
-		}
-		if (*str == sep) {
-			*buf[i] = '\0';
-			str++;
-			continue;
-		}
-		*buf[i]++ = *str++;
+	int *arg_int;
+	unsigned short *arg_attr16;
+	unsigned int *arg_attr32;
+	unsigned long long *arg_attr64, *arg_addr;
+	char *arg_str;
+	printf("%s\n", ApiInfo->Name);
+	for (i = 0; i < numArgApi[ApiInfo->Index]; i++) {
+			switch (GetTypeArgument(ApiInfo->Index, i)) {
+				case TYPE_INT:
+					arg_int = (int *)ApiInfo->Arg[i];
+					printf("    %d\n", *arg_int);
+					break;
+				case TYPE_ATTR16:
+					arg_attr16 = (unsigned short *)ApiInfo->Arg[i];
+					printf("    0x%x\n", *arg_attr16);
+					break;
+				case TYPE_ATTR32:
+					arg_attr32 = (unsigned int *)ApiInfo->Arg[i];
+					printf("    0x%x\n", *arg_attr32);
+					break;
+				case TYPE_ATTR64:
+					arg_attr64 = (unsigned long long *)ApiInfo->Arg[i];
+					printf("    0x%I64x\n", *arg_attr64);
+					break;
+				case TYPE_ADDR:
+					arg_addr = (unsigned long long *)ApiInfo->Arg[i];
+					printf("    0x%I64x\n", *arg_addr);
+					break;
+				case TYPE_STR:
+					arg_str = (char *)ApiInfo->Arg[i];
+					printf("    %s\n", arg_str);
+					break;
+			}
 	}
-	if (i == num_sep)
-		return num_sep;
-	return i + 1;
 }
+
+//int strnsep(char *str, char **buf, const char sep, int num_sep){
+//	int i;
+//	for (i = 0; i < num_sep; i++) {
+//		if (*str == '\0') {
+//			*buf[i] = '\0';
+//			break;
+//		}
+//		if (*str == sep) {
+//			*buf[i] = '\0';
+//			str++;
+//			continue;
+//		}
+//		*buf[i] = *str;
+//		buf[i]++;
+//		str++;
+//	}
+//	if (i == num_sep)
+//		return num_sep;
+//	return i + 1;
+//}
 
 int NameToApiIndex(char *Name){
-	if (strcmp(Name, "IsDebuggerPresent") == 0)
+	if (strncmp(Name, "IsDebuggerPresent\0", MAX_BUF) == 0)
 		return IDX_ISDEBUGGERPRESENT;
+	if (strncmp(Name, "GetFileAttributesA\0", MAX_BUF) == 0)
+		return IDX_GETFILEATTRIBUTESA;
+	if (strncmp(Name, "RegOpenKeyExA\0", MAX_BUF) == 0)
+		return IDX_OPENREGKEYEXA;
 	// writing
+	return IDX_INVALID_API;
 }
 
-int GetTypeArgument(int index, int arg){
-	// writing
-}
+//int GetTypeArgument(int index, int arg){
+//	switch(index) {
+//		case IDX_ISDEBUGGERPRESENT:
+//			return TYPE_NONE;
+//		case IDX_GETFILEATTRIBUTESA:
+//			return argTypeGetFileAttributesA[arg];
+//		case IDX_OPENREGKEYEXA:
+//			return argTypeOpenRegKeyExA[arg];
+//		// writing
+//	}
+//	return TYPE_NONE;
+//}
 
 void ConvertArgument(char *str, APIINFO *ApiInfo, int arg, int type) {
+	int *arg_int;
+	unsigned short *arg_attr16;
+	unsigned int *arg_attr32;
+	unsigned long long *arg_attr64;
+	unsigned long long *arg_addr;
 	switch (type) {
 		case TYPE_INT:
-			ApiInfo->u[arg] = (int)malloc(sizeof(int));
-			ApiInfo->u[arg].arg_int = atoi(str);
+			arg_int = (int *)malloc(sizeof(int *));
+			*arg_int = atoi(str);
+			ApiInfo->Arg[arg] = arg_int;
 			break;
 		case TYPE_ATTR16:
-			ApiInfo->u[arg] = (unsigned short int)malloc(sizeof(unsigned short int));
-			ApiInfo->u[arg].arg_attr16 = strtol(str, NULL, 0);
-			// writing
+			arg_attr16 = (unsigned short *)malloc(sizeof(unsigned short *));
+			*arg_attr16 = strtol(str, NULL, 0);
+			ApiInfo->Arg[arg] = arg_attr16;
 			break;
 		case TYPE_ATTR32:
-			ApiInfo->u[arg] = (unsigned int)malloc(sizeof(unsigned int));
-			ApiInfo->u[arg].arg_attr32 = strtol(str, NULL, 0);
-			// writing
+			arg_attr32 = (unsigned int *)malloc(sizeof(unsigned int *));
+			*arg_attr32 = strtol(str, NULL, 0);
+			ApiInfo->Arg[arg] = arg_attr32;
 			break;
 		case TYPE_ATTR64:
-			ApiInfo->u[arg] = (unsigned long long)malloc(sizeof(unsigned long long));
-			ApiInfo->u[arg].arg_attr64 = strtol(str, NULL, 0);
-			// writing
+			arg_attr64 = (unsigned long long *)malloc(sizeof(unsigned long long *));
+			*arg_attr64 = strtoll(str, NULL, 0);
+			ApiInfo->Arg[arg] = arg_attr64;
 			break;
 		case TYPE_ADDR:
-			ApiInfo->u[arg] = (unsigned long long)malloc(sizeof(unsigned long long));
-			ApiInfo->u[arg].arg_addr = strtol(str, NULL, 0);
-			// writing
+			arg_addr = (unsigned long long *)malloc(sizeof(unsigned long long *));
+			*arg_addr = strtoll(str, NULL, 0);
+			ApiInfo->Arg[arg] = arg_addr;
 			break;
 		case TYPE_STR:
-			ApiInfo->u[arg] = (char *)malloc(sizeof(char *));
-			ApiInfo->u[arg].arg_str = str;
+			ApiInfo->Arg[arg] = str;
 			break;
+		default:
+			;
+	}
 }
 
-void StrToApiInfo(str, APIINFO *ApiInfo){
+int StrToApiInfo(char *str, APIINFO *ApiInfo){
 	int i;
-	int apiindex, type;
+	int type;
 	char *buf[MAX_ARG + 1];
 	for (i = 0; i < MAX_ARG + 1; i++) {
 		buf[i] = (char *)malloc(sizeof(char) * MAX_BUF);
 	}
-	ApiInfo->Num_arg = strnsep(str, buf, ',', MAX_ARG + 1) - 1;
-	ApiInfo->Name = buf[0];
-	apiindex = NameToApiIndex(ApiInfo->Name);
-	for (i = 0; i < ApiInfo->Num_arg; i++) {
-		type = GetTypeArgument(apiindex, i);
-		ConvertArgument(buf[i+1], ApiInfo, type);
-		if (type != TYPE_STR)
-			free(buf[i+1]);
+	buf[0] = strtok(str, ",");
+	for (i = 0; i < MAX_ARG; i++) {
+		if (!(buf[i+1] = strtok(NULL, ",")))
+			break;
 	}
+	ApiInfo->Name = buf[0];
+	ApiInfo->Index = NameToApiIndex(ApiInfo->Name);
+	printf("%d\n", ApiInfo->Index); // for debugging
+	if (ApiInfo->Index == IDX_INVALID_API)
+		return 0;
+	for (i = 0; i < GetNumArgument(ApiInfo->Index); i++) {
+		type = GetTypeArgument(ApiInfo->Index, i);
+		ConvertArgument(buf[i+1], ApiInfo, i, type);
+	}
+	return 1;
 }
 
-void ClearApiInfo(APIINFO *ApiInfo){
-	// writing
+void FreeApiInfo(APIINFO *ApiInfo){
+	int i;
+	free(ApiInfo->Name);
+	for (i = 0; i < GetNumArgument(ApiInfo->Index); i++) {
+		free(ApiInfo->Arg[i]);
+	}
 }
