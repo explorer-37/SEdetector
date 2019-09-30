@@ -1,7 +1,9 @@
 *.o
 *.swp
 *.out
+*.log
 *.dll
 *.exe
 *~
-test.*
+test.c
+*/
