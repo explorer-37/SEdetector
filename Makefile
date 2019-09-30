@@ -8,9 +8,9 @@ DLLNAME		= apimonitor
 DLLFLAGS	= -shared -fPIC
 DLLLIBS		= 
 
-all:	$(PROGRAM)
+all:	exe dll
 
-$(PROGRAM):	$(OBJS)
+exe:	$(OBJS)
 		$(CC) $(CFLAG) $(LIBS) -o $(PROGRAM) $(OBJS)
 
 dll:	$(DLLNAME).c
