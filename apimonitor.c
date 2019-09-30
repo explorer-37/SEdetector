@@ -231,10 +231,15 @@ BOOL WINAPI newIsDebuggerPresent(){
 
 DWORD WINAPI newGetFileAttributesA(LPCTSTR lpFileName){
 	GetCallApi(IDX_GETFILEATTRIBUTESA, lpFileName);
-	return ApiInfo[IDX_GETFILEATTRIBUTESA].oriaddr();
+	return ApiInfo[IDX_GETFILEATTRIBUTESA].oriaddr(lpFileName);
 }
 
 LONG WINAPI newRegOpenKeyExA(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult){
 	GetCallApi(IDX_REGOPENKEYEXA, hKey, lpSubKey, ulOptions, samDesired, phkResult);
-	return ApiInfo[IDX_REGOPENKEYEXA].oriaddr();
+	return ApiInfo[IDX_REGOPENKEYEXA].oriaddr(hKey, lpSubKey, ulOptions, samDesired, phkResult);
 }
+
+HANDLE WINAPI newCreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile){
+	GetCallApi(IDX_CREATEFILEA, lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTempleteFile);
+	return ApiInfo[IDX_CREATEFILEATTRIBUTESA].oriaddr(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTempleteFile);
+

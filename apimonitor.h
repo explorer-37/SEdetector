@@ -49,6 +49,7 @@ void GetCallApi(int ApiIndex, ...);
 BOOL WINAPI newIsDebuggerPresent();
 DWORD WINAPI newGetFileAttributesA(LPCTSTR lpFileName);
 LONG WINAPI newRegOpenKeyExA(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
+HANDLE WINAPI newCreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
 
 APIINFO ApiInfo[MAX_HOOKED_API] = {};
 
