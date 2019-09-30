@@ -78,11 +78,11 @@ void GetApiEntry(){
 			ApiInfo[IDX_CREATEFILEA].NumArg = 7;
 			ApiInfo[IDX_CREATEFILEA].Arg = (int *)malloc(sizeof(int) * 7);
 			ApiInfo[IDX_CREATEFILEA].Arg[0] = TYPE_STRING;
-			ApiInfo[IDX_CREATEFILEA].Arg[1] = TYPE_ATTR32;
-			ApiInfo[IDX_CREATEFILEA].Arg[2] = TYPE_ATTR32;
+			ApiInfo[IDX_CREATEFILEA].Arg[1] = TYPE_ATTRIBUTE32;
+			ApiInfo[IDX_CREATEFILEA].Arg[2] = TYPE_ATTRIBUTE32;
 			ApiInfo[IDX_CREATEFILEA].Arg[3] = TYPE_ADDR;
-			ApiInfo[IDX_CREATEFILEA].Arg[4] = TYPE_ATTR32;
-			ApiInfo[IDX_CREATEFILEA].Arg[5] = TYPE_ATTR32;
+			ApiInfo[IDX_CREATEFILEA].Arg[4] = TYPE_ATTRIBUTE32;
+			ApiInfo[IDX_CREATEFILEA].Arg[5] = TYPE_ATTRIBUTE32;
 			ApiInfo[IDX_CREATEFILEA].Arg[6] = TYPE_ADDR;
 		}
 	}
@@ -240,6 +240,6 @@ LONG WINAPI newRegOpenKeyExA(HKEY hKey, LPCTSTR lpSubKey, DWORD ulOptions, REGSA
 }
 
 HANDLE WINAPI newCreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile){
-	GetCallApi(IDX_CREATEFILEA, lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTempleteFile);
-	return ApiInfo[IDX_CREATEFILEATTRIBUTESA].oriaddr(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTempleteFile);
-
+	GetCallApi(IDX_CREATEFILEA, lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+	return ApiInfo[IDX_CREATEFILEA].oriaddr(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+}
