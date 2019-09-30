@@ -7,3 +7,17 @@ MWS Cup2019の事前課題としてSandbox Evasionを検知して
 
 ## 納期
 __9月末__
+
+## コンパイル方法
+
+###Cygwinを用いてコンパイルする場合
+コンパイルにMinGW64を必要とします．
+
+```
+make all
+```
+
+##実行
+```
+./SEdetector.exe (executable file path)
+```
