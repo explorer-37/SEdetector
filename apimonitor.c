@@ -52,7 +52,7 @@ void GetApiEntry(){
 	if((kernel32 = GetModuleHandle("kernel32"))) {
 		const char *dll = "kernel32.dll";
 		{
-			const char *name = "IsDebbugerPresent";
+			const char *name = "IsDebuggerPresent";
 			ApiInfo[IDX_ISDEBUGGERPRESENT].oriaddr = GetProcAddress(kernel32, "IsDebuggerPresent");
 			ApiInfo[IDX_ISDEBUGGERPRESENT].newaddr = (void *)newIsDebuggerPresent;
 			ApiInfo[IDX_ISDEBUGGERPRESENT].Name = name;
