@@ -73,9 +73,9 @@ int IsCheckVmwareRegKey(APIINFO *info, int num_info){
 		if (info[i].Index == IDX_REGOPENKEYEXA) {
 			hKey = (unsigned long *)info[i].Arg[0];
 			SubKey = (char *)info[i].Arg[1];
-			fprintf(stderr, "vmre\n"); // for debugging
-			fprintf(stderr, "0x%lx ", *hKey); // for debugging
-			fprintf(stderr, "%s\n", SubKey); // for debugging
+			//fprintf(stderr, "vmre\n"); // for debugging
+			//fprintf(stderr, "0x%lx ", *hKey); // for debugging
+			//fprintf(stderr, "%s\n", SubKey); // for debugging
 			if (*hKey == HKEY_LOCAL_MACHINE) {
 				if (lstrcmp(SubKey, "SOFTWARE\\VMware, Inc.\\VMware Tools") == 0)
 					return 1;
@@ -92,8 +92,8 @@ int IsCheckVmwareFile(APIINFO *info, int num_info){
 	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_GETFILEATTRIBUTESA) {
 			FileName = (char *)info[i].Arg[0];
-			fprintf(stderr, "vmfi\n"); // for debugging
-			fprintf(stderr, "%s\n", FileName); // for debugging
+			//fprintf(stderr, "vmfi\n"); // for debugging
+			//fprintf(stderr, "%s\n", FileName); // for debugging
 			if (
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\vmmouse.sys") == 0 ||
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\vmhgfs.sys") == 0
@@ -111,8 +111,8 @@ int IsCheckVmwareDevice(APIINFO *info, int num_info){
 	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_CREATEFILEA) {
 			FileName = (char *)info[i].Arg[0];
-			fprintf(stderr, "vmde\n"); // for debugging
-			fprintf(stderr, "%s\n", FileName); // for debugging
+			//fprintf(stderr, "vmde\n"); // for debugging
+			//fprintf(stderr, "%s\n", FileName); // for debugging
 			if (
 					lstrcmp(FileName, "\\\\.\\HGFS") == 0 ||
 					lstrcmp(FileName, "\\\\.\\vmci") == 0
@@ -134,9 +134,9 @@ int IsCheckVboxRegKey(APIINFO *info, int num_info){
 		if (info[i].Index == IDX_REGOPENKEYEXA) {
 			hKey = (unsigned long *)info[i].Arg[0];
 			SubKey = (char *)info[i].Arg[1];
-			fprintf(stderr, "vbre\n"); // for debugging
-			fprintf(stderr, "0x%lx ", *hKey); // for debugging
-			fprintf(stderr, "%s\n", SubKey); // for debugging
+			//fprintf(stderr, "vbre\n"); // for debugging
+			//fprintf(stderr, "0x%lx ", *hKey); // for debugging
+			//fprintf(stderr, "%s\n", SubKey); // for debugging
 			if (*hKey == HKEY_LOCAL_MACHINE) {
 				if (
 						lstrcmp(SubKey, "SOFTWARE\\Oracle\\VirtualBox Guest Additions") == 0 ||
@@ -163,8 +163,8 @@ int IsCheckVboxFile(APIINFO *info, int num_info){
 	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_GETFILEATTRIBUTESA) {
 			FileName = (char *)info[i].Arg[0];
-			fprintf(stderr, "vbfi\n"); // for debugging
-			fprintf(stderr, "%s\n", FileName); // for debugging
+			//fprintf(stderr, "vbfi\n"); // for debugging
+			//fprintf(stderr, "%s\n", FileName); // for debugging
 			if (
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\VBoxMouse.sys") == 0 ||
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\VBoxGuest.sys") == 0 ||

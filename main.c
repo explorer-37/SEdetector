@@ -98,7 +98,7 @@ int main(int argc, char *argv[]){
 			break;
 		//fprintf(stderr, "%s\n", str); // for debugging
 		if(StrToApiInfo(str, &ApiInfo[num_hooked_api])) {
-			printApiInfo(&ApiInfo[num_hooked_api]); fflush(stderr); // for debugging
+			//printApiInfo(&ApiInfo[num_hooked_api]); fflush(stderr); // for debugging
 			num_hooked_api++;
 		}
 		if (num_hooked_api >= MAX_HOOKED_API)
