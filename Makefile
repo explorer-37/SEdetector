@@ -1,7 +1,6 @@
 PROGRAM		= SEdetector
-#CC			= i686-w64-mingw32-gcc
-CC			= gcc
-CFLAGS		= -Wall -Wextra -m64
+CC			= i686-w64-mingw32-gcc
+CFLAGS		= -Wall -Wextra
 LIBS		= 
 OBJS		= main.o checkSE.o
 DLLNAME		= apimonitor

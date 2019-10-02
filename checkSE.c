@@ -11,6 +11,13 @@
 
 void CheckSE(APIINFO *info, int num_info){
 
+	// debugger
+	printf("Check calling IsDebuggerPresent function...");
+	if (IsCheckIsDebuggerPresent(info, num_info))
+		printf("detected!\n");
+	else
+		printf("not detected.\n");
+
 	// vmware
 	printf("Check looking for registry keys of vmware...");
 	if (IsCheckVmwareRegKey(info, num_info))
@@ -32,26 +39,43 @@ void CheckSE(APIINFO *info, int num_info){
 
 	// virtual box
 	printf("Check looking for registry keys of virtual box...");
-	if (IsCheckVmwareFile(info, num_info))
+	if (IsCheckVboxRegKey(info, num_info))
 		printf("detected!\n");
 	else
 		printf("not detected.\n");
 
 	printf("Check looking for files of virtual box...");
-	if (IsCheckVmwareFile(info, num_info))
+	if (IsCheckVboxFile(info, num_info))
 		printf("detected!\n");
 	else
 		printf("not detected.\n");
 }
 
-/* start vmware check */
-// return if the program looks for registry keys that is unique to vmware
-int IsCheckVmwareRegKey(APIINFO *info, int num_info){
+/* start debugger check */
+// return nonzero value if the program looks for registry keys that is unique to vmware
+int IsCheckIsDebuggerPresent(APIINFO *info, int num_info){
 	int i;
 	for (i = 0; i < num_info; i++) {
+		if (info[i].Index == IDX_ISDEBUGGERPRESENT)
+			return 1;
+	}
+	return 0;
+}
+/* end debugger check */
+
+/* start vmware check */
+// return nonzero value if the program looks for registry keys that is unique to vmware
+int IsCheckVmwareRegKey(APIINFO *info, int num_info){
+	int i;
+	unsigned long *hKey;
+	char *SubKey;
+	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_REGOPENKEYEXA) {
-			unsigned long long *hKey = (unsigned long long *)info[i].Arg[0];
-			char *SubKey = (char *)info[i].Arg[1];
+			hKey = (unsigned long *)info[i].Arg[0];
+			SubKey = (char *)info[i].Arg[1];
+			fprintf(stderr, "vmre\n"); // for debugging
+			fprintf(stderr, "0x%lx ", *hKey); // for debugging
+			fprintf(stderr, "%s\n", SubKey); // for debugging
 			if (*hKey == HKEY_LOCAL_MACHINE) {
 				if (lstrcmp(SubKey, "SOFTWARE\\VMware, Inc.\\VMware Tools") == 0)
 					return 1;
@@ -61,12 +85,15 @@ int IsCheckVmwareRegKey(APIINFO *info, int num_info){
 	return 0;
 }
 
-// return if the program looks for files that is unique to vmware
+// return nonzero value if the program looks for files that is unique to vmware
 int IsCheckVmwareFile(APIINFO *info, int num_info){
 	int i;
+	char *FileName;
 	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_GETFILEATTRIBUTESA) {
-			char *FileName = (char *)info[i].Arg[0];
+			FileName = (char *)info[i].Arg[0];
+			fprintf(stderr, "vmfi\n"); // for debugging
+			fprintf(stderr, "%s\n", FileName); // for debugging
 			if (
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\vmmouse.sys") == 0 ||
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\vmhgfs.sys") == 0
@@ -77,15 +104,18 @@ int IsCheckVmwareFile(APIINFO *info, int num_info){
 	return 0;
 }
 
-// return if the program looks for devices that is unique to vmware
+// return nonzero value if the program looks for devices that is unique to vmware
 int IsCheckVmwareDevice(APIINFO *info, int num_info){
 	int i;
+	char *FileName;
 	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_CREATEFILEA) {
-			char *FileName = (char *)info[i].Arg[0];
+			FileName = (char *)info[i].Arg[0];
+			fprintf(stderr, "vmde\n"); // for debugging
+			fprintf(stderr, "%s\n", FileName); // for debugging
 			if (
-					lstrcmp(FileName, "\\\\.\\HGFS") ||
-					lstrcmp(FileName, "\\\\.\\vmci")
+					lstrcmp(FileName, "\\\\.\\HGFS") == 0 ||
+					lstrcmp(FileName, "\\\\.\\vmci") == 0
 			)
 				return 1;
 		}
@@ -95,13 +125,18 @@ int IsCheckVmwareDevice(APIINFO *info, int num_info){
 /* end vmware check */
 
 /* start virtual box check */
-// return if the program looks for registry keys that is unique to virtual box
+// return nonzero value if the program looks for registry keys that is unique to virtual box
 int IsCheckVboxRegKey(APIINFO *info, int num_info){
 	int i;
+	unsigned long *hKey;
+	char *SubKey;
 	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_REGOPENKEYEXA) {
-			unsigned long long *hKey = (unsigned long long *)info[i].Arg[0];
-			char *SubKey = (char *)info[i].Arg[1];
+			hKey = (unsigned long *)info[i].Arg[0];
+			SubKey = (char *)info[i].Arg[1];
+			fprintf(stderr, "vbre\n"); // for debugging
+			fprintf(stderr, "0x%lx ", *hKey); // for debugging
+			fprintf(stderr, "%s\n", SubKey); // for debugging
 			if (*hKey == HKEY_LOCAL_MACHINE) {
 				if (
 						lstrcmp(SubKey, "SOFTWARE\\Oracle\\VirtualBox Guest Additions") == 0 ||
@@ -121,12 +156,15 @@ int IsCheckVboxRegKey(APIINFO *info, int num_info){
 	return 0;
 }
 
-// return if the program looks for files that is unique to virtual box
+// return nonzero value if the program looks for files that is unique to virtual box
 int IsCheckVboxFile(APIINFO *info, int num_info){
 	int i;
+	char *FileName;
 	for (i = 0; i < num_info; i++) {
 		if (info[i].Index == IDX_GETFILEATTRIBUTESA) {
-			char *FileName = (char *)info[i].Arg[0];
+			FileName = (char *)info[i].Arg[0];
+			fprintf(stderr, "vbfi\n"); // for debugging
+			fprintf(stderr, "%s\n", FileName); // for debugging
 			if (
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\VBoxMouse.sys") == 0 ||
 					lstrcmp(FileName, "C:\\WINDOWS\\system32\\drivers\\VBoxGuest.sys") == 0 ||
@@ -153,14 +191,3 @@ int IsCheckVboxFile(APIINFO *info, int num_info){
 	return 0;
 }
 /* end virtual box check */
-
-// an example function which detect one of SE methods
-//int SEExample(APIINFO *info, int num_info){
-//	int i;
-//	for (i = 0; i < num_info; i++) {
-//		if (info[i].Index == IDX_INVALID_API) {
-//			return 1;
-//		}
-//	}
-//	return 0;
-//}

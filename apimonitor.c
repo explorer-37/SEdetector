@@ -11,10 +11,6 @@
 
 int WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved){
 	int i;
-	//HMODULE kernel32;
-	//if((kernel32 = GetModuleHandle("kernel32"))) {
-	//	ApiInfo[IDX_ISDEBUGGERPRESENT] = GetProcAddress(kernel32, "IsDebuggerPresent");
-	//}
 
 	switch (fdwReason) {
 		case DLL_PROCESS_ATTACH:
@@ -28,6 +24,10 @@ int WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, PVOID pvReserved){
 			//ModifyIat("kernel32.dll", newIsDebuggerPresent, ApiInfo[IDX_ISDEBUGGERPRESENT].addr);
 			// connect to named pipe
 			hPipe = ApiInfo[IDX_CREATEFILEA].oriaddr("\\\\.\\pipe\\SEdetector", GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+			if (hPipe == INVALID_HANDLE_VALUE) {
+				//MessageBox(NULL, "Cannnot connect to pipe", "debug", MB_OK); // for debugging
+				exit(EXIT_FAILURE);
+			}
 			Overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 			break;
 		case DLL_PROCESS_DETACH:
@@ -171,7 +171,7 @@ void GetCallApi(int ApiIndex, ...){
 	int i;
 	char str[MAX_STR], tmp[MAX_STR];
 	va_list arglist;
-	int arg_int; unsigned short arg_uint16; unsigned int arg_uint32; u_int64 arg_uint64; char *arg_str;
+	int arg_int; unsigned long arg_addr; unsigned short arg_uint16; unsigned int arg_uint32; unsigned long long arg_uint64; char *arg_str;
 
 	strncpy(str, ApiInfo[ApiIndex].Name, MAX_STR);
 
@@ -182,32 +182,32 @@ void GetCallApi(int ApiIndex, ...){
 				case TYPE_INT:
 					arg_int = va_arg(arglist, int);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s,%d", tmp, arg_int);
+					snprintf(str, MAX_STR, "%s\n%d", tmp, arg_int);
 					break;
 				case TYPE_ADDR:
-					arg_uint64 = va_arg(arglist, u_int64);
+					arg_addr = va_arg(arglist, unsigned long);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s,0x%I64x", tmp, arg_uint64);
+					snprintf(str, MAX_STR, "%s\n0x%lx", tmp, arg_addr);
 					break;
 				case TYPE_ATTRIBUTE16:
 					arg_uint16 = va_arg(arglist, unsigned int);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s,0x%x", tmp, arg_uint16);
+					snprintf(str, MAX_STR, "%s\n0x%x", tmp, arg_uint16);
 					break;
 				case TYPE_ATTRIBUTE32:
 					arg_uint32 = va_arg(arglist, unsigned int);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s,0x%x", tmp, arg_uint32);
+					snprintf(str, MAX_STR, "%s\n0x%x", tmp, arg_uint32);
 					break;
 				case TYPE_ATTRIBUTE64:
-					arg_uint64 = va_arg(arglist, u_int64);
+					arg_uint64 = va_arg(arglist, unsigned long long);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s,0x%I64x", tmp, arg_uint64);
+					snprintf(str, MAX_STR, "%s\n0x%I64x", tmp, arg_uint64);
 					break;
 				case TYPE_STRING:
 					arg_str = va_arg(arglist, char*);
 					strncpy(tmp, str, MAX_STR);
-					snprintf(str, MAX_STR, "%s,%s", tmp, arg_str);
+					snprintf(str, MAX_STR, "%s\n%s", tmp, arg_str);
 					break;
 				default:
 					;

@@ -39,6 +39,7 @@ typedef struct ApiInfo {
 	//uint64_t time;
 } APIINFO;
 
+int IsCheckIsDebuggerPresent(APIINFO *info, int num_info);
 int IsCheckVmwareRegKey(APIINFO *info, int num_info);
 int IsCheckVmwareFile(APIINFO *info, int num_info);
 int IsCheckVmwareDevice(APIINFO *info, int num_info);
